@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 actix-web = "3.3.2"
-diesel = {version="1.4.8", features= ["mysql"]}
+chrono = "0.4.19"
+diesel = {version="1.4.8", features= ["mysql", "chrono"]}
 dotenv = "0.15.0"
 serde = "1.0"
