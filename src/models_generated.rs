@@ -19,12 +19,12 @@ pub struct PrismaMigration {
 
 #[derive(Queryable, Debug)]
 pub struct User {
-    pub id: String,
+    pub id: i32,
     pub name: Option<String>,
     pub email: Option<String>,
-    pub email_verified: Option<NaiveDateTime>,
     pub image: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub email_verified: bool,
 }
 

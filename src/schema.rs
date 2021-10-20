@@ -13,13 +13,13 @@ table! {
 
 table! {
     user (id) {
-        id -> Varchar,
+        id -> Integer,
         name -> Nullable<Varchar>,
         email -> Nullable<Varchar>,
-        email_verified -> Nullable<Datetime>,
         image -> Nullable<Varchar>,
         created_at -> Datetime,
         updated_at -> Datetime,
+        email_verified -> Bool,
     }
 }
 

@@ -8,14 +8,15 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+
 }
 
 model user {
-  id            Int    @id @default(autoincrement())
-  name          String?
-  email         String?   @unique
-  email_verified DateTime?
-  image         String?
-  created_at     DateTime  @default(now())
-  updated_at     DateTime  @updatedAt
+  id              Int       @id @default(autoincrement())
+  name            String?
+  email           String?   @unique
+  email_verified  Boolean   @default(false)
+  image           String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
 }
