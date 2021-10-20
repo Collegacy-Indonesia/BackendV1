@@ -3,19 +3,20 @@
 
 use crate::utils::serializer::{json_time, option_json_time};
 use chrono::NaiveDateTime;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Queryable, Debug)]
 pub struct User {
     pub id: i32,
     pub name: Option<String>,
-    pub email: Option<String>,
+    pub email: String,
     pub image: Option<String>,
     #[serde(with = "json_time")]
     pub created_at: NaiveDateTime,
     #[serde(with = "json_time")]
     pub updated_at: NaiveDateTime,
     pub email_verified: bool,
+    pub password: String,
 }
 
 use crate::schema::user;

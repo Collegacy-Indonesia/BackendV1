@@ -15,15 +15,13 @@ table! {
     user (id) {
         id -> Integer,
         name -> Nullable<Varchar>,
-        email -> Nullable<Varchar>,
+        email -> Varchar,
         image -> Nullable<Varchar>,
         created_at -> Datetime,
         updated_at -> Datetime,
         email_verified -> Bool,
+        password -> Varchar,
     }
 }
 
-allow_tables_to_appear_in_same_query!(
-    _prisma_migrations,
-    user,
-);
+allow_tables_to_appear_in_same_query!(_prisma_migrations, user,);

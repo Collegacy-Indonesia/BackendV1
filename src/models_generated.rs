@@ -3,7 +3,6 @@
 #![allow(unused)]
 #![allow(clippy::all)]
 
-
 use chrono::NaiveDateTime;
 #[derive(Queryable, Debug)]
 pub struct PrismaMigration {
@@ -21,10 +20,10 @@ pub struct PrismaMigration {
 pub struct User {
     pub id: i32,
     pub name: Option<String>,
-    pub email: Option<String>,
+    pub email: String,
     pub image: Option<String>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub email_verified: bool,
+    pub password: String,
 }
-
