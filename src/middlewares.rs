@@ -7,24 +7,30 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-struct Claims {
-    sub: String,
-    company: String,
-    exp: usize,
+pub struct UserClaims {
+    pub email: String,
+    pub exp: usize,
 }
 
 fn validate_token(token: String) -> bool {
     let key = b"secret";
 
-    let token_data = match decode::<Claims>(
+    println!("{:?}", token);
+
+    let token_data = match decode::<UserClaims>(
         &token,
         &DecodingKey::from_secret(key),
         &Validation::default(),
     ) {
-        Ok(_) => true,
-        Err(_) => false,
+        Ok(t) => t,
+        Err(e) => panic!("{:?}", e),
     };
-    token_data
+
+    println!("{:?}", token_data);
+
+    println!("{:?}", token_data.header);
+
+    true
 }
 
 pub async fn validator(

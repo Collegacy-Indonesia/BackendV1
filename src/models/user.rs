@@ -5,7 +5,7 @@ use crate::utils::serializer::{json_time, option_json_time};
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Queryable, Debug)]
+#[derive(Serialize, Queryable, Debug, PartialEq)]
 pub struct User {
     pub id: i32,
     pub name: Option<String>,

@@ -4,7 +4,7 @@ extern crate dotenv;
 
 mod middlewares;
 
-use actix_web::{middleware, web, App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use diesel::{
     r2d2::{self, ConnectionManager},
@@ -37,10 +37,9 @@ async fn main() -> std::io::Result<()> {
         let auth = HttpAuthentication::bearer(middlewares::validator);
         App::new()
             .data(pool.clone())
-            .wrap(middleware::Logger::default())
             .service(
                 web::scope("/users")
-                    // .wrap(auth)
+                    .wrap(auth)
                     .service(controllers::user::get_user_by_id)
                     .service(controllers::user::update_user)
                     .service(controllers::user::create_user)
