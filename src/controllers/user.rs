@@ -7,11 +7,6 @@ use actix_web::{
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
-pub struct AllUserQuery {
-    pub limit: Option<i64>,
-}
-
 #[get("/")]
 async fn get_all_user(db: web::Data<Pool>, query: web::Query<AllUserQuery>) -> impl Responder {
     HttpResponse::Ok().json(user_usecase::get_all_user(db, query))
@@ -48,6 +43,11 @@ use crate::utils::serializer::json_time;
 #[derive(Deserialize, Debug)]
 pub struct GetUserPath {
     pub id: i32,
+}
+
+#[derive(Deserialize)]
+pub struct AllUserQuery {
+    pub limit: Option<i64>,
 }
 
 #[derive(Deserialize, Serialize, Insertable)]

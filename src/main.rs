@@ -2,13 +2,17 @@
 extern crate diesel;
 extern crate dotenv;
 
-use actix_web::{web, App, HttpServer};
+mod middlewares;
+
+use actix_web::{middleware, web, App, HttpServer};
+use actix_web_httpauth::middleware::HttpAuthentication;
 use diesel::{
     r2d2::{self, ConnectionManager},
     MysqlConnection,
 };
 use dotenv::dotenv;
 use std::env;
+
 pub mod controllers;
 pub mod models;
 pub mod repository;
@@ -30,14 +34,19 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to create pool.");
 
     HttpServer::new(move || {
-        App::new().data(pool.clone()).service(
-            web::scope("/users")
-                .service(controllers::user::get_user_by_id)
-                .service(controllers::user::update_user)
-                .service(controllers::user::create_user)
-                .service(controllers::user::delete_user)
-                .service(controllers::user::get_all_user),
-        )
+        let auth = HttpAuthentication::bearer(middlewares::validator);
+        App::new()
+            .data(pool.clone())
+            .wrap(middleware::Logger::default())
+            .service(
+                web::scope("/users")
+                    .wrap(auth)
+                    .service(controllers::user::get_user_by_id)
+                    .service(controllers::user::update_user)
+                    .service(controllers::user::create_user)
+                    .service(controllers::user::delete_user)
+                    .service(controllers::user::get_all_user),
+            )
     })
     .bind("127.0.0.1:8080")?
     .run()
