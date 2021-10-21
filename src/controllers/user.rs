@@ -7,9 +7,14 @@ use actix_web::{
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
+#[derive(Deserialize)]
+pub struct AllUserQuery {
+    pub limit: Option<i64>,
+}
+
 #[get("/")]
-async fn get_all_user(db: web::Data<Pool>) -> impl Responder {
-    HttpResponse::Ok().json(user_usecase::get_all_user(db))
+async fn get_all_user(db: web::Data<Pool>, query: web::Query<AllUserQuery>) -> impl Responder {
+    HttpResponse::Ok().json(user_usecase::get_all_user(db, query))
 }
 
 #[get("/{id}")]

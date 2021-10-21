@@ -1,13 +1,13 @@
 use crate::{
-    controllers::user::{CreateUserInput, GetUserPath, UpdateUserInput},
+    controllers::user::{AllUserQuery, CreateUserInput, GetUserPath, UpdateUserInput},
     models::user::User,
     repository::user as user_repository,
     Pool,
 };
 use actix_web::web::{self, Json};
 
-pub fn get_all_user(db: web::Data<Pool>) -> Vec<User> {
-    user_repository::get_users(db)
+pub fn get_all_user(db: web::Data<Pool>, query: web::Query<AllUserQuery>) -> Vec<User> {
+    user_repository::get_all_users(db, query)
 }
 
 pub fn get_user_by_id(db: web::Data<Pool>, info: web::Path<GetUserPath>) -> User {

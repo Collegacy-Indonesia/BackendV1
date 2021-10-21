@@ -1,4 +1,4 @@
-use crate::controllers::user::{CreateUserInput, UpdateUserInput};
+use crate::controllers::user::{AllUserQuery, CreateUserInput, UpdateUserInput};
 use crate::models::user::User;
 use crate::Pool;
 use actix_web::web::{self, Json};
@@ -37,14 +37,17 @@ pub fn update_user<'a>(
     user::table.order(user::id.desc()).first(conn).unwrap()
 }
 
-pub fn get_users(db: web::Data<Pool>) -> Vec<User> {
-    use crate::schema::user::dsl::*;
+pub fn get_all_users(db: web::Data<Pool>, q: web::Query<AllUserQuery>) -> Vec<User> {
+    use crate::schema::user;
+
+    let mut query = user::table.into_boxed();
+
+    if let Some(limit) = q.limit {
+        query = query.limit(limit);
+    };
 
     let connection = &db.get().unwrap();
-    let results = user
-        .limit(5)
-        .load::<User>(connection)
-        .expect("Error loading users");
+    let results = query.load::<User>(connection).expect("error loading user");
 
     results
 }
