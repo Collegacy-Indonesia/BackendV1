@@ -64,6 +64,18 @@ pub fn get_user_by_id(db: web::Data<Pool>, user_id: i32) -> User {
     result
 }
 
+pub fn get_user_by_email(db: web::Data<Pool>, user_email: String) -> User {
+    use crate::schema::user::dsl::*;
+
+    let connection = &db.get().unwrap();
+    let result = user
+        .filter(email.eq_all(user_email))
+        .first(connection)
+        .expect("Error loading users");
+
+    result
+}
+
 pub fn delete_user(db: web::Data<Pool>, user_id: i32) -> String {
     use crate::schema::user::dsl::*;
 

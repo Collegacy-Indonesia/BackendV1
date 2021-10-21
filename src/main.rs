@@ -40,13 +40,14 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(
                 web::scope("/users")
-                    .wrap(auth)
+                    // .wrap(auth)
                     .service(controllers::user::get_user_by_id)
                     .service(controllers::user::update_user)
                     .service(controllers::user::create_user)
                     .service(controllers::user::delete_user)
                     .service(controllers::user::get_all_user),
             )
+            .service(web::scope("/auth").service(controllers::auth::login))
     })
     .bind("127.0.0.1:8080")?
     .run()

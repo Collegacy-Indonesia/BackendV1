@@ -16,7 +16,6 @@ pub struct User {
     #[serde(with = "json_time")]
     pub updated_at: NaiveDateTime,
     pub email_verified: bool,
-    #[serde(skip_serializing)]
     pub password: String,
 }
 

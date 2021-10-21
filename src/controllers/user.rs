@@ -1,4 +1,4 @@
-use crate::{usecase::user as user_usecase, Pool};
+use crate::{usecase, Pool};
 use actix_web::{
     delete, get, post, put,
     web::{self, Json},
@@ -7,19 +7,19 @@ use actix_web::{
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-#[get("/")]
+#[get("")]
 async fn get_all_user(db: web::Data<Pool>, query: web::Query<AllUserQuery>) -> impl Responder {
-    HttpResponse::Ok().json(user_usecase::get_all_user(db, query))
+    HttpResponse::Ok().json(usecase::user::get_all_user(db, query))
 }
 
 #[get("/{id}")]
 async fn get_user_by_id(info: web::Path<GetUserPath>, db: web::Data<Pool>) -> impl Responder {
-    HttpResponse::Ok().json(user_usecase::get_user_by_id(db, info))
+    HttpResponse::Ok().json(usecase::user::get_user_by_id(db, info))
 }
 
-#[post("/")]
+#[post("")]
 async fn create_user(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> impl Responder {
-    HttpResponse::Ok().json(user_usecase::create_user(db, payload))
+    HttpResponse::Ok().json(usecase::user::create_user(db, payload))
 }
 
 #[put("/{id}")]
@@ -29,12 +29,12 @@ async fn update_user(
     payload: Json<UpdateUserInput>,
 ) -> impl Responder {
     println!("{:?}", info);
-    HttpResponse::Ok().json(user_usecase::update_user(db, info, payload))
+    HttpResponse::Ok().json(usecase::user::update_user(db, info, payload))
 }
 
 #[delete("/{id}")]
 async fn delete_user(info: web::Path<GetUserPath>, db: web::Data<Pool>) -> impl Responder {
-    HttpResponse::Ok().body(user_usecase::delete_user(db, info))
+    HttpResponse::Ok().body(usecase::user::delete_user(db, info))
 }
 
 use crate::schema::user;
