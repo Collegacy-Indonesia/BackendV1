@@ -46,8 +46,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .data(pool.clone())
             .service(
+                // -- TODO = wrap in auth by simply .wrap(auth)
                 web::scope("/users")
-                    .wrap(auth)
                     .service(controllers::user::get_user_by_id)
                     .service(controllers::user::update_user)
                     .service(controllers::user::create_user)

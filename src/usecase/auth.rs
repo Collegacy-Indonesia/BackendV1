@@ -4,7 +4,9 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    controllers::auth::LoginInput, middlewares::UserClaims, repository, Pool, UnwrappedPool,
+    controllers::{auth::LoginInput, user::CreateUserInput},
+    middlewares::UserClaims,
+    repository, Pool, UnwrappedPool,
 };
 
 pub fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Token {
@@ -20,6 +22,23 @@ pub fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Token {
     );
     token
 }
+
+// pub fn register(db: web::Data<Pool>, payload: Json<LoginInput>) -> Token {
+//     let user = repository::user::create_user(
+//         &db.get().unwrap(),
+//         serde_json::to_string(&serializedUser).unwrap(),
+//     );
+//     let user_claims = UserClaims {
+//         email: user.email,
+//         exp: 1000000000000000,
+//     };
+//     let token = generate_token(
+//         &db.get().unwrap(),
+//         user_claims,
+//         payload.password.to_string(),
+//     );
+//     token
+// }
 
 fn generate_token(db: &UnwrappedPool, user: UserClaims, password: String) -> Token {
     // Todo : create password verification, create error
