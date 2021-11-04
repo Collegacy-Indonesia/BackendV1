@@ -29,11 +29,13 @@ pub type UnwrappedPool = PooledConnection<ConnectionManager<MysqlConnection>>;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+    let host = env::var("HOST").expect("Host not set");
+    let port = env::var("PORT").expect("Port not set");
+    let database_url = env::var("DATABASE_URL").expect("Database url must be set in .env");
     std::env::set_var("RUST_LOG", "actix_web=info");
     env_logger::init();
 
-    dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("Database url must be set in .env");
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
     let pool: Pool = r2d2::Pool::builder()
         .build(manager)
@@ -56,7 +58,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(web::scope("/auth").service(controllers::auth::login))
     })
-    .bind("0.0.0.0:8080")?
+    .bind(format!("{}:{}", host, port))?
     .run()
     .await;
 
