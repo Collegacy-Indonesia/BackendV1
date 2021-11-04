@@ -15,22 +15,16 @@ pub struct UserClaims {
 fn validate_token(token: String) -> bool {
     let key = b"secret";
 
-    println!("{:?}", token);
-
     let token_data = match decode::<UserClaims>(
         &token,
         &DecodingKey::from_secret(key),
         &Validation::default(),
     ) {
-        Ok(t) => t,
-        Err(e) => panic!("{:?}", e),
+        Ok(_) => true,
+        Err(_) => false,
     };
 
-    println!("{:?}", token_data);
-
-    println!("{:?}", token_data.header);
-
-    true
+    token_data
 }
 
 pub async fn validator(
@@ -41,6 +35,9 @@ pub async fn validator(
         .app_data::<Config>()
         .map(|data| data.clone())
         .unwrap_or_else(Default::default);
+
+    // keep for later usage of pool to middleware:
+    // let pool = req.app_data::<web::Data<Pool>>().unwrap();
     if validate_token(credentials.token().to_string()) {
         Ok(req)
     } else {
