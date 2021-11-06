@@ -2,19 +2,26 @@ use crate::{controllers::user::CreateUserInput, usecase, Pool};
 use actix_web::{
     post,
     web::{self, Json},
-    HttpResponse, Responder,
+    Error, HttpResponse,
 };
 // use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 #[post("/login")]
-async fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> impl Responder {
-    HttpResponse::Ok().json(usecase::auth::login(db, payload))
+async fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Result<HttpResponse, Error> {
+    usecase::auth::login(db, payload)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[post("/register")]
-async fn register(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> impl Responder {
-    HttpResponse::Ok().json(usecase::auth::register(db, payload))
+async fn register(
+    db: web::Data<Pool>,
+    payload: Json<CreateUserInput>,
+) -> Result<HttpResponse, Error> {
+    usecase::auth::register(db, payload)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[derive(Deserialize, Serialize)]

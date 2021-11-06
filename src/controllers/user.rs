@@ -2,24 +2,39 @@ use crate::{usecase, Pool};
 use actix_web::{
     delete, get, post, put,
     web::{self, Json},
-    HttpResponse, Responder,
+    HttpResponse,
 };
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 #[get("")]
-async fn get_all_user(db: web::Data<Pool>, query: web::Query<AllUserQuery>) -> impl Responder {
-    HttpResponse::Ok().json(usecase::user::get_all_user(db, query))
+async fn get_all_user(
+    db: web::Data<Pool>,
+    query: web::Query<AllUserQuery>,
+) -> Result<HttpResponse, actix_web::Error> {
+    usecase::user::get_all_user(db, query)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[get("/{id}")]
-async fn get_user_by_id(info: web::Path<GetUserPath>, db: web::Data<Pool>) -> impl Responder {
-    HttpResponse::Ok().json(usecase::user::get_user_by_id(db, info))
+async fn get_user_by_id(
+    info: web::Path<GetUserPath>,
+    db: web::Data<Pool>,
+) -> Result<HttpResponse, actix_web::Error> {
+    usecase::user::get_user_by_id(db, info)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[post("")]
-async fn create_user(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> impl Responder {
-    HttpResponse::Ok().json(usecase::user::create_user(db, payload))
+async fn create_user(
+    db: web::Data<Pool>,
+    payload: Json<CreateUserInput>,
+) -> Result<HttpResponse, actix_web::Error> {
+    usecase::user::create_user(db, payload)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[put("/{id}")]
@@ -27,14 +42,20 @@ async fn update_user(
     info: web::Path<GetUserPath>,
     db: web::Data<Pool>,
     payload: Json<UpdateUserInput>,
-) -> impl Responder {
-    println!("{:?}", info);
-    HttpResponse::Ok().json(usecase::user::update_user(db, info, payload))
+) -> Result<HttpResponse, actix_web::Error> {
+    usecase::user::update_user(db, info, payload)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 #[delete("/{id}")]
-async fn delete_user(info: web::Path<GetUserPath>, db: web::Data<Pool>) -> impl Responder {
-    HttpResponse::Ok().body(usecase::user::delete_user(db, info))
+async fn delete_user(
+    info: web::Path<GetUserPath>,
+    db: web::Data<Pool>,
+) -> Result<HttpResponse, actix_web::Error> {
+    usecase::user::delete_user(db, info)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
 }
 
 use crate::schema::user;

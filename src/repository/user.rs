@@ -7,29 +7,35 @@ use actix_web::web::{self, Json};
 use bcrypt::{hash, DEFAULT_COST};
 use diesel::prelude::*;
 
-pub fn create_user<'a>(connection: &UnwrappedPool, user_data: Json<CreateUserInput>) -> User {
+pub fn create_user<'a>(
+    connection: &UnwrappedPool,
+    user_data: Json<CreateUserInput>,
+) -> Result<User, diesel::result::Error> {
     use crate::schema::user;
     let mut user_data = user_data.into_inner();
 
     let hashed = hash(user_data.password, DEFAULT_COST).unwrap();
     user_data.password = hashed;
 
-    diesel::insert_into(user::table)
+    let insert_respond = diesel::insert_into(user::table)
         .values(user_data)
-        .execute(connection)
-        .expect("Error saving new user");
+        .execute(connection);
 
-    user::table
-        .order(user::id.desc())
-        .first(connection)
-        .unwrap()
+    match insert_respond {
+        Err(e) => return Err(e),
+        _ => {}
+    }
+
+    let final_user = user::table.order(user::id.desc()).first(connection);
+
+    final_user
 }
 
 pub fn update_user<'a>(
     connection: &UnwrappedPool,
     user_id: i32,
     user_data: Json<UpdateUserInput>,
-) -> User {
+) -> Result<User, diesel::result::Error> {
     use crate::schema::user;
     let mut user_data = user_data.into_inner();
 
@@ -38,19 +44,23 @@ pub fn update_user<'a>(
         user_data.password = Some(hashed);
     }
 
-    diesel::update(user::table)
+    let update_respond = diesel::update(user::table)
         .filter(user::id.eq(user_id))
         .set(&user_data)
-        .execute(connection)
-        .expect("Error updating user");
+        .execute(connection);
 
-    user::table
-        .order(user::id.desc())
-        .first(connection)
-        .unwrap()
+    match update_respond {
+        Err(e) => return Err(e),
+        _ => {}
+    }
+
+    user::table.order(user::id.desc()).first(connection)
 }
 
-pub fn get_all_users(connection: &UnwrappedPool, q: web::Query<AllUserQuery>) -> Vec<User> {
+pub fn get_all_users(
+    connection: &UnwrappedPool,
+    q: web::Query<AllUserQuery>,
+) -> Result<Vec<User>, diesel::result::Error> {
     use crate::schema::user;
 
     let mut query = user::table.into_boxed();
@@ -59,39 +69,39 @@ pub fn get_all_users(connection: &UnwrappedPool, q: web::Query<AllUserQuery>) ->
         query = query.limit(limit);
     };
 
-    let results = query.load::<User>(connection).expect("error loading user");
+    let results = query.load::<User>(connection);
 
     results
 }
 
-pub fn get_user_by_id(connection: &UnwrappedPool, user_id: i32) -> User {
+pub fn get_user_by_id(
+    connection: &UnwrappedPool,
+    user_id: i32,
+) -> Result<User, diesel::result::Error> {
     use crate::schema::user::dsl::*;
 
-    let result = user
-        .filter(id.eq_all(user_id))
-        .first(connection)
-        .expect("Error loading users");
-
-    result
+    user.filter(id.eq_all(user_id)).first(connection)
 }
 
-pub fn get_user_by_email(connection: &UnwrappedPool, user_email: String) -> User {
+pub fn get_user_by_email(
+    connection: &UnwrappedPool,
+    user_email: String,
+) -> Result<User, diesel::result::Error> {
     use crate::schema::user::dsl::*;
 
-    let result = user
-        .filter(email.eq_all(user_email))
-        .first(connection)
-        .expect("Error loading users");
-
-    result
+    user.filter(email.eq_all(user_email)).first(connection)
 }
 
-pub fn delete_user(connection: &UnwrappedPool, user_id: i32) -> String {
+pub fn delete_user(
+    connection: &UnwrappedPool,
+    user_id: i32,
+) -> Result<String, diesel::result::Error> {
     use crate::schema::user::dsl::*;
 
-    let num_deleted = diesel::delete(user.filter(id.eq_all(user_id)))
-        .execute(connection)
-        .expect("Error loading users");
+    let delete_respond = diesel::delete(user.filter(id.eq_all(user_id))).execute(connection);
 
-    format!("Successfully deleted {} users", num_deleted)
+    match delete_respond {
+        Ok(num_deleted) => return Ok(format!("Successfully deleted {} users", num_deleted)),
+        Err(e) => return Err(e),
+    };
 }
