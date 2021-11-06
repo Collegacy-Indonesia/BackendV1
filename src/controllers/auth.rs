@@ -1,4 +1,4 @@
-use crate::{usecase, Pool};
+use crate::{controllers::user::CreateUserInput, usecase, Pool};
 use actix_web::{
     post,
     web::{self, Json},
@@ -12,10 +12,10 @@ async fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> impl Responder
     HttpResponse::Ok().json(usecase::auth::login(db, payload))
 }
 
-// #[post("/register")]
-// async fn register(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> impl Responder {
-//     HttpResponse::Ok().json(user_usecase::create_user(db, payload))
-// }
+#[post("/register")]
+async fn register(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> impl Responder {
+    HttpResponse::Ok().json(usecase::auth::register(db, payload))
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct LoginInput {

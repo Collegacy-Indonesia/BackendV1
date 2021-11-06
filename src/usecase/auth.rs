@@ -23,22 +23,15 @@ pub fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Token {
     token
 }
 
-// pub fn register(db: web::Data<Pool>, payload: Json<LoginInput>) -> Token {
-//     let user = repository::user::create_user(
-//         &db.get().unwrap(),
-//         serde_json::to_string(&serializedUser).unwrap(),
-//     );
-//     let user_claims = UserClaims {
-//         email: user.email,
-//         exp: 1000000000000000,
-//     };
-//     let token = generate_token(
-//         &db.get().unwrap(),
-//         user_claims,
-//         payload.password.to_string(),
-//     );
-//     token
-// }
+pub fn register(db: web::Data<Pool>, user: Json<CreateUserInput>) -> Token {
+    let user = repository::user::create_user(&db.get().unwrap(), user);
+    let user_claims = UserClaims {
+        email: user.email,
+        exp: 1000000000000000,
+    };
+    let token = generate_token(&db.get().unwrap(), user_claims, user.password.to_string());
+    token
+}
 
 fn generate_token(db: &UnwrappedPool, user: UserClaims, password: String) -> Token {
     // Todo : create password verification, create error
