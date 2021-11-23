@@ -14,12 +14,12 @@ pub struct UserClaims {
 
 fn validate_token(token: String) -> bool {
     let key = b"secret";
+    let validation = Validation {
+        ..Default::default()
+    };
 
-    let token_data = match decode::<UserClaims>(
-        &token,
-        &DecodingKey::from_secret(key),
-        &Validation::default(),
-    ) {
+    let token_data = match decode::<UserClaims>(&token, &DecodingKey::from_secret(key), &validation)
+    {
         Ok(_) => true,
         Err(_) => false,
     };

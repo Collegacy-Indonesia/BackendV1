@@ -24,8 +24,23 @@ async fn register(
         .map_err(|err| err)
 }
 
+#[post("/refreshtoken")]
+async fn refresh_token(
+    db: web::Data<Pool>,
+    payload: Json<RefreshTokenInput>,
+) -> Result<HttpResponse, Error> {
+    usecase::auth::refresh_token(db, payload)
+        .map(|res| HttpResponse::Ok().json(res))
+        .map_err(|err| err)
+}
+
 #[derive(Deserialize, Serialize)]
 pub struct LoginInput {
     pub email: String,
     pub password: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct RefreshTokenInput {
+    pub refresh_token: String,
 }

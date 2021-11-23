@@ -1,14 +1,12 @@
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
-
 extern crate env_logger;
 
 mod middlewares;
 
-use actix_web::{middleware::Logger, web, App, HttpServer};
-
 use ::r2d2::PooledConnection;
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use diesel::{
     r2d2::{self, ConnectionManager},
@@ -59,6 +57,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/auth")
                     .service(controllers::auth::login)
+                    .service(controllers::auth::refresh_token)
                     .service(controllers::auth::register),
             )
     })

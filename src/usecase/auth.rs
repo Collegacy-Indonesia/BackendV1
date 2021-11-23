@@ -1,7 +1,10 @@
 use crate::{
-    controllers::{auth::LoginInput, user::CreateUserInput},
+    controllers::{
+        auth::{LoginInput, RefreshTokenInput},
+        user::CreateUserInput,
+    },
     middlewares::UserClaims,
-    repository, Pool, UnwrappedPool,
+    repository, Pool,
 };
 use actix_web::{
     error::ErrorBadRequest,
@@ -9,53 +12,23 @@ use actix_web::{
     Error,
 };
 use bcrypt::verify;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 
 pub fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Result<Token, Error> {
-    let user = repository::user::get_user_by_email(&db.get().unwrap(), payload.email.to_string());
-
-    let user = match user {
-        Err(e) => return Err(ErrorBadRequest(e)),
-        Ok(user) => user,
-    };
-
-    let user_claims = UserClaims {
-        email: user.email,
-        exp: 1000000000000000,
-    };
-    let token = generate_token(
-        &db.get().unwrap(),
-        user_claims,
-        payload.password.to_string(),
-    );
-    token
-}
-
-pub fn register(db: web::Data<Pool>, user: Json<CreateUserInput>) -> Result<Token, Error> {
-    let user = match repository::user::create_user(&db.get().unwrap(), user) {
-        Err(e) => return Err(ErrorBadRequest(e)),
-        Ok(user) => user,
-    };
+    let user =
+        match repository::user::get_user_by_email(&db.get().unwrap(), payload.email.to_string()) {
+            Err(e) => return Err(ErrorBadRequest(e)),
+            Ok(user) => user,
+        };
 
     let user_claims = UserClaims {
         email: user.email,
-        exp: 1000000000000000,
+        exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
     };
 
-    let token = generate_token(&db.get().unwrap(), user_claims, user.password.to_string());
-    token
-}
-
-fn generate_token(db: &UnwrappedPool, user: UserClaims, password: String) -> Result<Token, Error> {
-    // Todo : create password verification, create error
-
-    let user_data = match repository::user::get_user_by_email(db, user.email.clone()) {
-        Err(e) => return Err(ErrorBadRequest(e)),
-        Ok(user) => user,
-    };
-
-    match verify(password, &user_data.password) {
+    match verify(payload.password.to_string(), &user.password) {
         Err(e) => return Err(ErrorBadRequest(e)),
         Ok(result) => match result {
             false => return Err(ErrorBadRequest("Password Incorrect!")),
@@ -63,18 +36,84 @@ fn generate_token(db: &UnwrappedPool, user: UserClaims, password: String) -> Res
         },
     };
 
+    let token = generate_access_and_refresh_token(user_claims);
+
+    token
+}
+
+pub fn register(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> Result<Token, Error> {
+    let user = match repository::user::create_user(&db.get().unwrap(), payload) {
+        Err(e) => return Err(ErrorBadRequest(e)),
+        Ok(user) => user,
+    };
+
+    let user_claims = UserClaims {
+        email: user.email,
+        exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
+    };
+
+    let token = generate_access_and_refresh_token(user_claims);
+
+    token
+}
+
+pub fn refresh_token(payload: Json<RefreshTokenInput>) -> Result<Token, Error> {
     let key = b"secret";
+    let refresh_key = b"anotherkey";
+    let validation = Validation {
+        validate_exp: false,
+        ..Default::default()
+    };
+
+    let refresh_token_data = match decode::<UserClaims>(
+        &payload.refresh_token,
+        &DecodingKey::from_secret(refresh_key),
+        &validation,
+    ) {
+        Ok(t) => t,
+        Err(e) => return Err(ErrorBadRequest(e)),
+    };
+
+    let user_claims = UserClaims {
+        email: refresh_token_data.claims.email,
+        exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
+    };
+
+    let token = match encode::<UserClaims>(
+        &Header::default(),
+        &user_claims,
+        &EncodingKey::from_secret(key),
+    ) {
+        Ok(t) => t,
+        Err(e) => return Err(ErrorBadRequest(e)),
+    };
+
+    let auth_token = Token {
+        token,
+        refresh_token: payload.refresh_token.to_string(),
+    };
+
+    Ok(auth_token)
+}
+
+// This will also put the refresh token on database
+fn generate_access_and_refresh_token(user: UserClaims) -> Result<Token, Error> {
+    let key = b"secret";
+    let refresh_key = b"anotherkey";
     let token =
         match encode::<UserClaims>(&Header::default(), &user, &EncodingKey::from_secret(key)) {
             Ok(t) => t,
             Err(e) => return Err(ErrorBadRequest(e)),
         };
 
-    let refresh_token =
-        match encode::<UserClaims>(&Header::default(), &user, &EncodingKey::from_secret(key)) {
-            Ok(t) => t,
-            Err(e) => return Err(ErrorBadRequest(e)),
-        };
+    let refresh_token = match encode::<UserClaims>(
+        &Header::default(),
+        &user,
+        &EncodingKey::from_secret(refresh_key),
+    ) {
+        Ok(t) => t,
+        Err(e) => return Err(ErrorBadRequest(e)),
+    };
 
     let auth_token = Token {
         token,
