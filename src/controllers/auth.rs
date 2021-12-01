@@ -24,12 +24,12 @@ async fn register(
         .map_err(|err| err)
 }
 
-#[post("/refreshtoken")]
+#[post("/refresh-token")]
 async fn refresh_token(
     db: web::Data<Pool>,
     payload: Json<RefreshTokenInput>,
 ) -> Result<HttpResponse, Error> {
-    usecase::auth::refresh_token(db, payload)
+    usecase::auth::refresh_token(payload)
         .map(|res| HttpResponse::Ok().json(res))
         .map_err(|err| err)
 }

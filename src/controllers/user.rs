@@ -1,10 +1,13 @@
 use crate::{usecase, Pool};
 use actix_web::{
-    delete, get, post, put,
+    delete,
+    error::ErrorLocked,
+    get, post, put,
     web::{self, Json},
     HttpResponse,
 };
 use chrono::NaiveDateTime;
+use diesel::{sql_query, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 
 #[get("")]
@@ -15,6 +18,16 @@ async fn get_all_user(
     usecase::user::get_all_user(db, query)
         .map(|res| HttpResponse::Ok().json(res))
         .map_err(|err| err)
+}
+
+#[get("/table")]
+async fn get_table(
+    db: web::Data<Pool>,
+    query: web::Query<AllUserQuery>,
+) -> Result<HttpResponse, actix_web::Error> {
+    sql_query("SELECT * FROM users ORDER BY id").load<LoadQuery<PooledConnection<ConnectionManager<MysqlConnection>>, _>(&db.get().unwrap());
+
+    Ok(HttpResponse::Ok().body("ok"))
 }
 
 #[get("/{id}")]
