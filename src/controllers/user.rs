@@ -20,16 +20,6 @@ async fn get_all_user(
         .map_err(|err| err)
 }
 
-#[get("/table")]
-async fn get_table(
-    db: web::Data<Pool>,
-    query: web::Query<AllUserQuery>,
-) -> Result<HttpResponse, actix_web::Error> {
-    sql_query("SELECT * FROM users ORDER BY id").load<LoadQuery<PooledConnection<ConnectionManager<MysqlConnection>>, _>(&db.get().unwrap());
-
-    Ok(HttpResponse::Ok().body("ok"))
-}
-
 #[get("/{id}")]
 async fn get_user_by_id(
     info: web::Path<GetUserPath>,
