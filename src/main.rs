@@ -6,6 +6,8 @@ extern crate env_logger;
 mod middlewares;
 
 use ::r2d2::PooledConnection;
+use actix_cors::Cors;
+use actix_web::http::header;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use diesel::{
@@ -41,9 +43,18 @@ async fn main() -> std::io::Result<()> {
 
     let result = HttpServer::new(move || {
         let auth = HttpAuthentication::bearer(middlewares::validator);
+
+        let cors = Cors::default()
+            .allowed_origin("*")
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+            .allowed_header(header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
             .wrap(Logger::default())
             .wrap(Logger::new("%a %{User-Agent}i"))
+            .wrap(cors)
             .data(pool.clone())
             .service(
                 web::scope("/users")
