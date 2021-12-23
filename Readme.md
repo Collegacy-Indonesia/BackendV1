@@ -31,6 +31,6 @@ $ cd ..
 Then it will create the schema in your database. Next, pull the schema definition to the rust API by doing the following command.
 
 ```
-$ diesel print_schema > src/schema.rs
+$ diesel print-schema > src/schema.rs
 $ diesel_ext --model > src/models.rs
 ```

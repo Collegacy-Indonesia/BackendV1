@@ -1,6 +1,6 @@
 use crate::{
     controllers::{
-        auth::{LoginInput, RefreshTokenInput},
+        auth::{LoginInput, ProfileInput, RefreshTokenInput},
         user::CreateUserInput,
     },
     middlewares::UserClaims,
@@ -9,7 +9,7 @@ use crate::{
 use actix_web::{
     error::ErrorBadRequest,
     web::{self, Json},
-    Error,
+    Error, HttpRequest,
 };
 use bcrypt::verify;
 use chrono::{Duration, Utc};
@@ -24,6 +24,7 @@ pub fn login(db: web::Data<Pool>, payload: Json<LoginInput>) -> Result<Token, Er
         };
 
     let user_claims = UserClaims {
+        id: user.id,
         email: user.email,
         exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
     };
@@ -48,6 +49,7 @@ pub fn register(db: web::Data<Pool>, payload: Json<CreateUserInput>) -> Result<T
     };
 
     let user_claims = UserClaims {
+        id: user.id,
         email: user.email,
         exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
     };
@@ -75,6 +77,7 @@ pub fn refresh_token(payload: Json<RefreshTokenInput>) -> Result<Token, Error> {
     };
 
     let user_claims = UserClaims {
+        id: refresh_token_data.claims.id,
         email: refresh_token_data.claims.email,
         exp: (Utc::now() + Duration::minutes(30)).timestamp() as usize,
     };
@@ -121,6 +124,24 @@ fn generate_access_and_refresh_token(user: UserClaims) -> Result<Token, Error> {
     };
 
     Ok(auth_token)
+}
+
+pub fn profile(payload: Json<ProfileInput>) -> Result<UserClaims, Error> {
+    let token = payload.token.to_string();
+    print!("{:?}", token);
+
+    let key = b"secret";
+    let validation = Validation {
+        ..Default::default()
+    };
+
+    let token_data = match decode::<UserClaims>(&token, &DecodingKey::from_secret(key), &validation)
+    {
+        Ok(t) => t,
+        Err(e) => return Err(ErrorBadRequest(e)),
+    };
+
+    Ok(token_data.claims)
 }
 
 #[derive(Deserialize, Serialize)]

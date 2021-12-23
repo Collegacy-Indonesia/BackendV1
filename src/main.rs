@@ -61,7 +61,8 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/auth")
                     .service(controllers::auth::login)
                     .service(controllers::auth::refresh_token)
-                    .service(controllers::auth::register),
+                    .service(controllers::auth::register)
+                    .service(controllers::auth::profile),
             )
     })
     .bind(format!("{}:{}", host, port))?

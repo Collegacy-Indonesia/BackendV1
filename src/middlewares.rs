@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct UserClaims {
     pub email: String,
+    pub id: i32,
     pub exp: usize,
 }
 
