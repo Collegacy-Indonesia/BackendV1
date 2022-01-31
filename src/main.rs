@@ -64,6 +64,12 @@ async fn main() -> std::io::Result<()> {
                     .service(controllers::auth::register)
                     .service(controllers::auth::profile),
             )
+            .service(
+                web::scope("/summit-registrants")
+                    .service(controllers::summit::get_all_summit_registrants)
+                    .service(controllers::summit::get_summit_registrants)
+                    .service(controllers::summit::create_summit_registrants),
+            )
     })
     .bind(format!("{}:{}", host, port))?
     .run()
