@@ -41,7 +41,6 @@ use crate::schema::summit_registrant;
 #[derive(Deserialize, Serialize, Insertable)]
 #[table_name = "summit_registrant"]
 pub struct CreateSummitRegistrantInput {
-    pub user_id: i32,
     pub no_hp: String,
     pub universitas: String,
     pub jurusan: String,
