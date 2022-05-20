@@ -1,6 +1,6 @@
 # Backend Collegacy Indonesia V1
 
-This is a backend rest api server using rust. Built with actix-web and diesel. This backend service is also using prisma with the javascript client for handling the automigration.
+This is a backend api server using rust. Built with actix-web and diesel. This backend service is also using prisma with the javascript client for handling the automigration.
 
 ## Installation
 
